@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include "LedControl.h"
 #include <EEPROM.h>
-
+ 
 struct Point {
   byte x;
   byte y;
@@ -10,7 +10,7 @@ const int pinSW = 2;
 const int pinX = A0;
 const int pinY = A1;
 const int pinBrightness = 3;
-
+ 
 const byte RS = 9;
 const byte enable = 8;
 const byte d4 = 7;
@@ -18,15 +18,18 @@ const byte d5 = 6;
 const byte d6 = 5;
 const byte d7 = 4;
 LiquidCrystal lcd(RS, enable, d4, d5, d6, d7);
-
+ 
 const int minThreshold = 400;
 const int maxThreshold = 600;
-
+ 
+//temporary 
+String name="Default";
+ 
 int xValue;
 int yValue;
 byte swState;
 byte lastSwState;
-
+ 
 const int matrixSize = 8;
 bool matrix[matrixSize][matrixSize]={
   {0, 0, 0, 0, 0, 0, 0, 0,},
@@ -40,15 +43,15 @@ bool matrix[matrixSize][matrixSize]={
 };
 int joyMovedX;
 int joyMovedY;
-
+ 
 int menuOption = 1;
-
+ 
 int lcdBrightness;
 int ledBrightness;
-
+ 
 const int lcdBrightnessLocation = 0;
 const int ledBrightnessLocation = 1;
-
+ 
 int indicator;
 int score = 0;
 byte fullBox[8] = {
@@ -71,18 +74,18 @@ byte emptyBox[8] = {
   B00000,
   B00000
 };
-
-
+ 
+ 
 const int dinPin = 12;
 const int clockPin = 11;
 const int loadPin = 10;
-
+ 
 LedControl led = LedControl(dinPin, clockPin, loadPin, 1);  //DIN, CLK, LOAD,No. DRIVER
-
+ 
 Point currentPos, previousPos, foodPos;
-
+ 
 void setup() {
-
+ 
   ledBrightness = EEPROM.read(ledBrightnessLocation);
   lcdBrightness = EEPROM.read(lcdBrightnessLocation);
   Serial.begin(9600);
@@ -92,6 +95,14 @@ void setup() {
   lcd.createChar(1, emptyBox);
   lcd.begin(16, 2);
   pinMode(pinSW, INPUT_PULLUP);
+ 
+  analogWrite(pinBrightness, lcdBrightness);
+  led.setIntensity(0, ledBrightness);
+  lcd.setCursor(0, 0);
+  lcd.print("    Welcome,     ");
+  lcd.setCursor(0, 1);
+  lcd.print("     player!     ");
+  delay(4000);  
 }
 void loop() {
   analogWrite(pinBrightness, lcdBrightness);
@@ -99,8 +110,8 @@ void loop() {
   xValue = analogRead(pinX);
   yValue = analogRead(pinY);
   swState = digitalRead(pinSW);
-
-
+ 
+ 
   Serial.println(menuOption);
   switch (menuOption) {
     case 1:
@@ -183,6 +194,19 @@ void loop() {
       lcd.setCursor(0, 1);
       lcd.print("Git:Angel1Ionita");
       break;
+    case 211:
+      lcd.setCursor(0, 0);
+      lcd.print("      Name      ");
+      lcd.setCursor(0, 1);
+      //lcd.print("Coming soon     ");
+      if (Serial.available()>0)
+        {
+        name=Serial.readString();
+     }
+      else
+        {
+        lcd.print(name);}      
+      break;      
     case 221:
       lcd.setCursor(0, 0);
       lcd.print(" LCD Brightness ");
@@ -225,7 +249,7 @@ void loop() {
         menuOption /= 10;
       break;
   }
-
+ 
   if (menuOption != 11) {
     //Vertical movement check
     if (xValue < minThreshold && joyMovedX == false) {
@@ -255,7 +279,7 @@ void loop() {
     if (xValue > minThreshold && xValue < maxThreshold) {
       joyMovedX = false;
     }
-
+ 
     // Horizontal movement check
     if (yValue < minThreshold && joyMovedY == false) {
       joyMovedY = true;
@@ -270,8 +294,8 @@ void loop() {
     if (yValue > minThreshold && yValue < maxThreshold) {
       joyMovedY = false;
     }
-
-
+ 
+ 
     if (swState != lastSwState) {
       if (swState == LOW) {
         menuOption *= 10;
@@ -281,20 +305,20 @@ void loop() {
         }
       }
     }
-
+ 
     lastSwState = swState;
   } else {
     updateGame();
   }
 }
-
+ 
 void displayMatrix() {
   led.clearDisplay(0);
   for (int row = 0; row < matrixSize; row++)
     for (int col = 0; col < matrixSize; col++)
       led.setLed(0, row, col, matrix[row][col]);
 }
-
+ 
 void initGame() {
   score = 0;
   foodPos.x = random(matrixSize);
@@ -315,13 +339,13 @@ void updateCoords() {
       matrix[foodPos.x][foodPos.y] = 1;
     } while (foodPos.x == currentPos.x && foodPos.y == currentPos.y);
   }
-
+ 
   matrix[previousPos.x][previousPos.y] = 0;
   matrix[currentPos.x][currentPos.y] = 1;
   previousPos.x = currentPos.x;
   previousPos.y = currentPos.y;
 }
-
+ 
 void updateGame() {
   //Vertical movement check
   if (xValue < minThreshold && joyMovedX == false) {
@@ -343,7 +367,7 @@ void updateGame() {
   if (xValue > minThreshold && xValue < maxThreshold) {
     joyMovedX = false;
   }
-
+ 
   // Horizontal movement check
   if (yValue < minThreshold && joyMovedY == false) {
     joyMovedY = true;
