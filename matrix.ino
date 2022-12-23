@@ -6,6 +6,10 @@ const int pinSW = A0;
 const int pinX = A2;
 const int pinY = A1;
 
+const int dinPin = 12;
+const int clockPin = 11;
+const int loadPin = 10;
+
 
 const byte RS = 9;
 const byte enable = 8;
@@ -14,6 +18,7 @@ const byte d5 = 6;
 const byte d6 = 5;
 const byte d7 = 4;
 const byte pinBrightness = 3;
+
 LiquidCrystal lcd(RS, enable, d4, d5, d6, d7);
 
 const int minThreshold = 400;
@@ -50,7 +55,6 @@ String highscoreName = "top";
 int indicator;
 int lcdPage = 1;
 
-int score = 0;
 byte fullBox[8] = {
   B11111,
   B11111,
@@ -105,10 +109,9 @@ byte speedUp[8] = {
   B00000000,
 };
 
-const int dinPin = 12;
-const int clockPin = 11;
-const int loadPin = 10;
 
+
+int score = 0;
 const int STARTING_LOCATION = 1;
 int ballX, previousBallX;
 
@@ -150,7 +153,6 @@ void setup() {
   readStringFromEEPROM(leaderboardNameLocation, highscoreName);
   EEPROM.get(leaderboardScoreLocation, highscore);
 
-
   randomSeed(analogRead(A4) * 1000 + analogRead(A5));
   led.shutdown(0, false);
   led.clearDisplay(0);
@@ -161,10 +163,7 @@ void setup() {
 
   analogWrite(pinBrightness, lcdBrightness);
   led.setIntensity(0, ledBrightness);
-  lcd.setCursor(0, 0);
-  lcd.print("    Welcome,     ");
-  lcd.setCursor(0, 1);
-  lcd.print("     player!     ");
+  printLCD("    Welcome,     ", "     player!     ");
   delay(4000);
 }
 void loop() {
@@ -175,74 +174,41 @@ void loop() {
   yValue = analogRead(pinY);
   swState = digitalRead(pinSW);
 
-
   Serial.println(menuOption);
+
   switch (menuOption) {
     case 1:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Start         ");
+      printLCD("      Menu      ", "> Start         ");
       break;
     case 2:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Settings      ");
+      printLCD("      Menu      ", "> Settings      ");
       break;
     case 3:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> High Score    ");
+      printLCD("      Menu      ", "> High Score    ");
       break;
     case 4:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> How to play   ");
+      printLCD("      Menu      ", "> How to play   ");
       break;
     case 5:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> About         ");
+      printLCD("      Menu      ", "> About         ");
       break;
     case 6:
-      lcd.setCursor(0, 0);
-      lcd.print("      Menu      ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Reset         ");
+      printLCD("      Menu      ", "> Reset         ");
       break;
     case 11:
       if (!gameOver) {
-        lcd.setCursor(0, 0);
-        lcd.print("     Score:     ");
-        lcd.setCursor(0, 1);
-        lcd.print(String(String(score) + "            "));
+        printLCD("     Score:     ", String(String(score) + "            "));
       } else {
         if (lcdPage == 1) {
-          lcd.setCursor(0, 0);
-          lcd.print("   Game Over!   ");
-          lcd.setCursor(0, 1);
-          lcd.print(String("Score: " + String(score) + "            "));
+          printLCD("   Game Over!   ", String("Score: " + String(score) + "            "));
         } else {
           if (difficulty != HARD) {
-            lcd.setCursor(0, 0);
-            lcd.print("Play on hard mod");
-            lcd.setCursor(0, 1);
-            lcd.print("e for highscore!");
+            printLCD("Play on hard mod", "e for highscore!");
           } else {
             if (newHighscore) {
-              lcd.setCursor(0, 0);
-              lcd.print("You got a        ");
-              lcd.setCursor(0, 1);
-              lcd.print("highscore!      ");
+              printLCD("You got a        ", "highscore!      ");
             } else {
-              lcd.setCursor(0, 0);
-              lcd.print("Try again for a  ");
-              lcd.setCursor(0, 1);
-              lcd.print("highscore!       ");
+              printLCD("Try again for a  ", "highscore!      ");
             }
           }
         }
@@ -251,58 +217,31 @@ void loop() {
 
       break;
     case 21:
-      lcd.setCursor(0, 0);
-      lcd.print("    Settings    ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Name          ");
+      printLCD("    Settings    ", "> Name          ");
       break;
     case 22:
-      lcd.setCursor(0, 0);
-      lcd.print("    Settings    ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Difficulty    ");
+      printLCD("    Settings    ", "> Difficulty    ");
       break;
     case 23:
-      lcd.setCursor(0, 0);
-      lcd.print("    Settings    ");
-      lcd.setCursor(0, 1);
-      lcd.print("> LCD Brightness");
+      printLCD("    Settings    ", "> LCD Brightness");
       break;
     case 24:
-      lcd.setCursor(0, 0);
-      lcd.print("    Settings    ");
-      lcd.setCursor(0, 1);
-      lcd.print("> LED Brightness");
+      printLCD("    Settings    ", "> LED Brightness");
       break;
     case 25:
-      lcd.setCursor(0, 0);
-      lcd.print("    Settings    ");
-      lcd.setCursor(0, 1);
-      lcd.print("> Sounds        ");
+      printLCD("    Settings    ", "> Sounds        ");
       break;
     case 31:
-      lcd.setCursor(0, 0);
-      lcd.print("   High Score   ");
-      lcd.setCursor(0, 1);
-      lcd.print(String(String(highscoreName) + ": " + String(highscore) + "            "));
+      printLCD("   High Score   ", String(String(highscoreName) + ": " + String(highscore) + "            "));
       break;
     case 41:
-      lcd.setCursor(0, 0);
-      lcd.print("Avoid obstacles!");
-      lcd.setCursor(0, 1);
-      lcd.print("Move left/right.");
+      printLCD("Avoid obstacles!", "Move left/right.");
       break;
     case 51:
-      lcd.setCursor(0, 0);
-      lcd.print("     About      ");
-      lcd.setCursor(0, 1);
-      lcd.print("Git:Angel1Ionita");
+      printLCD("     About      ", "Git:Angel1Ionita");
       break;
     case 61:
-      lcd.setCursor(0, 0);
-      lcd.print("     Reset      ");
-      lcd.setCursor(0, 1);
-      lcd.print("Reset succesful!");
+      printLCD("     Reset      ", "Reset succesful!");
       break;
     case 211:
       lcd.setCursor(0, 0);
@@ -364,10 +303,7 @@ void loop() {
         led.setRow(0, row, B01111110);
       break;
     case 251:
-      lcd.setCursor(0, 0);
-      lcd.print("    Sounds      ");
-      lcd.setCursor(0, 1);
-      lcd.print("-               ");
+      printLCD("    Sounds      ", "-               ");
       break;
     default:
       if (joyMovedX)
@@ -401,9 +337,7 @@ void loop() {
         }
       }
     }
-  }
-  //if (menuOption != 11) {
-  else {
+  } else {
     //Vertical movement check
     if (xValue < minThreshold && joyMovedX == false) {
       joyMovedX = true;
@@ -428,11 +362,9 @@ void loop() {
       joyMovedX = true;
       if (menuOption == 231 && lcdBrightness > 15) {
         lcdBrightness -= 16;
-        //EEPROM.update(lcdBrightnessLocation, lcdBrightness);
         Serial.println(lcdBrightness);
       } else if (menuOption == 241 && ledBrightness > 0) {
         --ledBrightness;
-        //EEPROM.update(ledBrightnessLocation, ledBrightness);
       } else if (menuOption == 221 && difficulty != HARD) {
         ++difficulty;
       } else if (menuOption == 211) {
@@ -455,7 +387,6 @@ void loop() {
       joyMovedY = true;
       led.clearDisplay(0);
       if (menuOption == 211) {
-        Serial.println("Done!");
         writeStringToEEPROM(nameLocation, name);
       }
       if (menuOption == 231) {
@@ -472,7 +403,7 @@ void loop() {
       joyMovedY = false;
     }
 
-
+    //Button press check
     if (swState != lastSwState) {
       if (swState == LOW) {
 
@@ -505,14 +436,7 @@ void loop() {
   lastSwState = swState;
 }
 
-void writeStringToEEPROM(int location, String str) {
-  for (int i = 0; i < 3; i++)
-    EEPROM.update(location + i, str[i]);
-}
-void readStringFromEEPROM(int location, String &name) {
-  for (int i = 0; i < 3; i++)
-    name[i] = EEPROM.read(location + i);
-}
+
 
 
 void printMatrix() {
@@ -521,8 +445,11 @@ void printMatrix() {
     led.setRow(0, row, displayMatrix[row]);
 }
 
-byte generateRandomNumber() {
-  return random(1, matrixRightLimit);
+void printLCD(String str1, String str2) {
+  lcd.setCursor(0, 0);
+  lcd.print(str1);
+  lcd.setCursor(0, 1);
+  lcd.print(str2);
 }
 
 void scrollScreen(int nr) {
@@ -532,7 +459,7 @@ void scrollScreen(int nr) {
   displayMatrix[0] = B00000000;
   if (random(obstacleChance) == 0)
     bitSet(displayMatrix[0], matrixRightLimit - nr);
-  if (wallHit()) {
+  if (obstacleHit()) {
     gameOver = 1;
   } else {
     bitSet(displayMatrix[matrixRightLimit], matrixRightLimit - ballX);
@@ -540,9 +467,11 @@ void scrollScreen(int nr) {
   onMatrixUpdate();
 }
 
+/*
+  This function gets called when the player makes a move
+*/
 void onPointMove() {
-
-  if (wallHit()) {
+  if (obstacleHit()) {
     gameOver = 1;
   } else {
     bitSet(displayMatrix[matrixRightLimit], matrixRightLimit - ballX);
@@ -552,13 +481,18 @@ void onPointMove() {
   onMatrixUpdate();
 }
 
+/*
+  This function gets called when the matrix is updated,
+  either by scrolling or by the player making a move
+*/
 void onMatrixUpdate() {
   if (gameOver)
     copyMatrix(deathScreen);
   printMatrix();
 }
 
-bool wallHit() {
+bool obstacleHit() {
+  //checks if the position of the character matches the position of the obstacle
   return bitRead(displayMatrix[matrixRightLimit], matrixRightLimit - ballX);
 }
 
@@ -605,9 +539,6 @@ void setDifficulty(int difficulty) {
       movementSpeed = 400;
       abilityDuration = 13000;
       break;
-
-    default:
-      Serial.print("Sensor error");
   }
 }
 
@@ -637,9 +568,6 @@ void setupGame() {
 void game() {
   currentMillis = millis() - startTimestamp;
 
-  xValue = analogRead(pinX);
-  yValue = analogRead(pinY);
-  swState = digitalRead(pinSW);
   if (!gameOver) {
     if (animationPlaying) {
       if (currentMillis - previousAnimationBlink >= animationBlinkDuration) {
@@ -671,7 +599,7 @@ void game() {
         animationPlaying = 1;
       }
     if (!animationPlaying) {
-      if (abilityActive == 1)
+      if (abilityActive)
         if (currentMillis - previousMillisAnimation >= abilityDuration) {
           previousMillisAnimation = currentMillis;
           abilityActive = 0;
@@ -691,6 +619,15 @@ void game() {
       }
     }
   }
+}
+
+void writeStringToEEPROM(int location, String str) {
+  for (int i = 0; i < 3; i++)
+    EEPROM.update(location + i, str[i]);
+}
+void readStringFromEEPROM(int location, String &name) {
+  for (int i = 0; i < 3; i++)
+    name[i] = EEPROM.read(location + i);
 }
 
 void resetEEPROM() {
